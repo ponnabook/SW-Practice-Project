@@ -11,27 +11,19 @@ const SpaceSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    required: [true, 'Please add an address'],
+    required: [true, 'Please add an address']
   },
-  district: {
+  telephone: {
     type: String,
-    required: [true, 'Please add a district'],
+    required: [true, 'Please add a telephone']
   },
-  province: {
-    type: String,
-    required: [true, 'Please add a province'],
+  openTime: {
+    type: Date,
+    required: [true, 'Please add a open time'],
   },
-  postalcode: {
-    type: String,
-    required: [true, 'Please add a postalcode'],
-    maxlength: [5, 'Postal Code can not be more than 5 digits'],
-  },
-  tel: {
-    type: String,
-  },
-  region: {
-    type: String,
-    required: [true, 'Please add a region'],
-  },
+  closeTime: {
+    type: Date,
+    required: [true, 'Please add a close time'],
+  }
 });
 module.exports = mongoose.model('Space', SpaceSchema);
