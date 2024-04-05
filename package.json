@@ -1,0 +1,29 @@
+{
+  "name": "sw-practice-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": " server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ponnabook/SW-Practice-Project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ponnabook/SW-Practice-Project/issues"
+  },
+  "homepage": "https://github.com/ponnabook/SW-Practice-Project#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
