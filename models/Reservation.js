@@ -12,7 +12,13 @@ const ReservationSchema=new mongoose.Schema({
     },
     coworkingSpace:{
         type:mongoose.Schema.ObjectId,
-        ref: 'Space',
+        ref: 'CoworkingSpace',
+        required:true
+    },
+    numberOfRoom:{
+        type:Number,
+        default:1,
+        max:3,
         required:true
     },
     createdAt:{
