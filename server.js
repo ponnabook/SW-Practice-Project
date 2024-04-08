@@ -8,11 +8,18 @@ dotenv.config({ path: './config/config.env' });
 //Connect to database
 connectDB();
 //Route files
-const spaces = require('./routes/spaces');
+const coworkingSpaces = require('./routes/coworkingSpace');
+const reservations = require('./routes/reservation');
+
 const app = express();
+
 //Body parser
 app.use(express.json());
-app.use('/api/v1/spaces', spaces);
+
+//Mount routers
+app.use("/api/v1/coworkingSpaces", coworkingSpaces);
+app.use("/api/v1/reservations", reservations);
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(
   PORT,
