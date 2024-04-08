@@ -1,7 +1,7 @@
 /** @format */
 
 const mongoose = require('mongoose');
-const SpaceSchema = new mongoose.Schema({
+const CoworkingSpaceSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Please add a name'],
@@ -26,4 +26,4 @@ const SpaceSchema = new mongoose.Schema({
     required: [true, 'Please add a close time'],
   }
 });
-module.exports = mongoose.model('Space', SpaceSchema);
+module.exports = mongoose.model('CoworkingSpace', CoworkingSpaceSchema);
