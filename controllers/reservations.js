@@ -2,6 +2,7 @@
 
 const Reservation = require("../models/Reservation");
 const CoworkingSpace = require("../models/CoworkingSpace");
+const ReminderEmail = require("./reminderEmail");
 
 //@desc Get all Reservations
 //@route GET /api/v1/reservations
@@ -81,6 +82,7 @@ exports.getReservations =async (req,res,next)=>{
 
         //add user Id to req.body
         req.body.user=req.user.id;
+        req.body.email=req.user.email;
 
         //Check for existed reservation
         const existedReservation=await Reservation.find({user:req.user.id});
@@ -91,6 +93,7 @@ exports.getReservations =async (req,res,next)=>{
         }
 
         const reservation=await Reservation.create(req.body);
+        ReminderEmail.scheduleReminder(req.body.email, req.body.reservationDate);
 
         res.status(200).json({
             success:true,
