@@ -25,5 +25,16 @@ const CoworkingSpaceSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a close time'],
   }
+},{
+  toJSON: {virtuals:true},
+  toObject: {virtuals:true}
 });
-module.exports = mongoose.model('coworkingSpace', CoworkingSpaceSchema);
+
+//Reverse populate with virtuals
+CoworkingSpaceSchema.virtual('reservations',{
+  ref:'Reservation',
+  localField: '_id',
+  foreignField: 'coworkingSpace',
+  justOne:false
+});
+module.exports = mongoose.model('CoworkingSpace', CoworkingSpaceSchema);
