@@ -3,14 +3,9 @@
 const express = require('express');
 const {
   getCoworkingSpaces,
-  getCoworkingSpace,
-  // createCoworkingSpace,
-  // updateCoworkingSpace,
-  // deleteCoworkingSpace,
+  getCoworkingSpace
 } = require('../controllers/coworkingSpaces.js');
 const router = express.Router();
 router.route('/').get(getCoworkingSpaces);
 router.route('/:id').get(getCoworkingSpace);
-// router.route('/').get(getCoworkingSpaces).post(createCoworkingSpace);
-// router.route('/:id').get(getCoworkingSpace).put(updateCoworkingSpace).delete(deleteCoworkingSpace);
 module.exports = router;

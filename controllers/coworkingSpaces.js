@@ -6,29 +6,16 @@ const CoworkingSpace = require("../models/CoworkingSpace");
 exports.getCoworkingSpaces = async (req, res, next) => {
   try {
     let query;
-
-    //copy req.query
     const reqQuery = { ...req.query };
 
-    //Fields to exclude
     const removeFields = ["select", "sort", "page", "limit"];
-
-    //Loop over remove fields and delete them from reqQuery
     removeFields.forEach((param) => delete reqQuery[param]);
-    console.log(reqQuery);
-
-    //Create query string
     let queryStr = JSON.stringify(reqQuery);
-
-    //Create operators (!gt, $gte, etc)
     queryStr = queryStr.replace(
       /\b(gt|gte|lt|lte|in)\b/g,
       (match) => `$${match}`
     );
-
-    //finding resource
-    query = CoworkingSpace.find(JSON.parse(queryStr)).populate("reservations");
-
+    query = CoworkingSpace.find(JSON.parse(queryStr));
     //Select Fields
     if (req.query.select) {
       const fields = req.query.select.split(",").join(" ");
@@ -40,9 +27,8 @@ exports.getCoworkingSpaces = async (req, res, next) => {
       const sortBy = req.query.sort.split(",").join(" ");
       query = query.sort(sortBy);
     } else {
-      query = query.sort("-createdAt");
+      query = query.sort("name");
     }
-
     //Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 25;
