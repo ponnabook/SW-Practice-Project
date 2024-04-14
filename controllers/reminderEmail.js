@@ -1,27 +1,38 @@
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
 
-function sendReminderEmail (userEmail, reservationDate) {
-  // Create a nodemailer transporter
+const CoworkingSpace = require("../models/CoworkingSpace");
+const User = require("../models/User");
+
+async function sendReminderEmail(userEmail, reservationDetail) {
+  const coworkingSpace = await CoworkingSpace.findById(
+    reservationDetail.coworkingSpaceId
+  );
+  const user = await User.findById(reservationDetail.user);
+  const reservationDate = reservationDetail.reserveDate;
+
   const transporter = nodemailer.createTransport({
-    // Configure your email service
-    // Example for Gmail
     service: "gmail",
     auth: {
       user: "forcoworkingreservation@gmail.com",
-      pass: "forCoworkingReservation123",
+      pass: "aqzv yuws xzpz voaz",
     },
   });
 
-  // Email content
   const mailOptions = {
     from: "forcoworkingreservation@gmail.com",
     to: userEmail,
-    subject: "Coworking Reservation Reminder",
-    text: `This is a reminder for your coworking reservation scheduled for ${reservationDate}.`,
+    subject: "Coworkingspace's Reservation Reminder",
+    text: `Dear ${user.name}
+    This is a reminder for your coworking reservation scheduled at ${coworkingSpace.name} on ${reservationDate}
+    number of rooms: ${reservationDetail.numberOfRoom} 
+    address: ${coworkingSpace.address} 
+    open time - close time: ${coworkingSpace.openTime} - ${coworkingSpace.closeTime} 
+    for contact: ${coworkingSpace.telephone}
+    Best regards,
+    My sugar`,
   };
 
-  // Send email
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error("Error sending reminder email:", error);
@@ -29,20 +40,23 @@ function sendReminderEmail (userEmail, reservationDate) {
       console.log("Reminder email sent:", info.response);
     }
   });
-};
+}
 
-// Function to schedule reminder
-exports.scheduleReminder = (userEmail, reservationDate) => {
-  // Calculate the reminder date (1 day before reservation date)
-  const reminderDate = new Date(reservationDate);
+exports.scheduleReminder = (userEmail, reservationDetail) => {
+  const currentDate = new Date();
+  const reminderDate = new Date(reservationDetail.reserveDate);
+
   reminderDate.setDate(reminderDate.getDate() - 1);
 
-  // Schedule reminder using node-cron
-  cron.schedule(`0 9 * * *`, () => {
-    // Schedule reminder every day at 9:00 AM
-    const currentDate = new Date();
-    if (currentDate.toDateString() === reminderDate.toDateString()) {
-      sendReminderEmail(userEmail, reservationDate);
-    }
-  });
+  //If less than 1 day, send remainder email now
+  if (reminderDate < currentDate) {
+    sendReminderEmail(userEmail, reservationDetail);
+  } else {
+    cron.schedule('0 0 * * *', () => {
+      const currentDate = new Date();
+      if (currentDate === reminderDate) {
+        sendReminderEmail(userEmail, reservationDetail);
+      }
+    });
+  }
 };
