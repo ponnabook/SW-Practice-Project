@@ -18,12 +18,12 @@ const CoworkingSpaceSchema = new mongoose.Schema({
     required: [true, 'Please add a telephone']
   },
   openTime: {
-    type: Date,
+    type: String,
     required: [true, 'Please add a open time'],
   },
   closeTime: {
-    type: Date,
+    type: String,
     required: [true, 'Please add a close time'],
   }
 });
-module.exports = mongoose.model('CoworkingSpace', CoworkingSpaceSchema);
+module.exports = mongoose.model('coworkingSpace', CoworkingSpaceSchema);
