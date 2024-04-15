@@ -6,7 +6,7 @@ const User = require("../models/User");
 
 async function sendReminderEmail(userEmail, reservationDetail) {
   const coworkingSpace = await CoworkingSpace.findById(
-    reservationDetail.coworkingSpaceId
+    reservationDetail.coworkingSpace
   );
   const user = await User.findById(reservationDetail.user);
   const reservationDate = reservationDetail.reserveDate;
