@@ -2,7 +2,7 @@
 
 const Reservation = require('../models/Reservation');
 const CoworkingSpace = require('../models/CoworkingSpace');
-const ReminderEmail = require('./reminderEmail');
+const Email = require('./email');
 
 //@desc Get all Reservations
 //@route GET /api/v1/reservations
@@ -107,15 +107,12 @@ exports.createReservation = async (req, res, next) => {
     }
 
     const reservation = await Reservation.create(req.body);
-    ReminderEmail.sendConfirmation(req.user.email, req.body);
-    ReminderEmail.scheduleReminder(req.user.email, req.body);
+    Email.sendConfirmation(req.user.email, req.body);
+    Email.scheduleReminder(req.user.email, req.body);
 
     res.status(201).json({
       success: true,
-      msg:
-        'send email reminder to ' +
-        req.user.email +
-        ' before 1 day of this reservation',
+      msg: 'Create Reservation successful',
       data: reservation,
     });
   } catch (error) {
