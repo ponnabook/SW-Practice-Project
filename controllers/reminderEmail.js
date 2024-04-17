@@ -1,8 +1,11 @@
-const nodemailer = require("nodemailer");
-const cron = require("node-cron");
+/** @format */
 
-const CoworkingSpace = require("../models/CoworkingSpace");
-const User = require("../models/User");
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
+const moment = require('moment');
+
+const CoworkingSpace = require('../models/CoworkingSpace');
+const User = require('../models/User');
 
 async function sendReminderEmail(userEmail, reservationDetail) {
   const coworkingSpace = await CoworkingSpace.findById(
@@ -12,19 +15,23 @@ async function sendReminderEmail(userEmail, reservationDetail) {
   const reservationDate = reservationDetail.reserveDate;
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    service: 'gmail',
     auth: {
-      user: "forcoworkingreservation@gmail.com",
-      pass: "aqzv yuws xzpz voaz",
+      user: 'forcoworkingreservation@gmail.com',
+      pass: 'aqzv yuws xzpz voaz',
     },
   });
 
+  const formattedDate = moment(reservationDate).format(
+    'MMMM DD, YYYY, hh:mm:ss A'
+  );
+
   const mailOptions = {
-    from: "forcoworkingreservation@gmail.com",
+    from: 'forcoworkingreservation@gmail.com',
     to: userEmail,
     subject: "Coworkingspace's Reservation Reminder",
     text: `Dear ${user.name}
-    This is a reminder for your coworking reservation scheduled at ${coworkingSpace.name} on ${reservationDate}
+    This is a reminder for your coworking reservation scheduled at ${coworkingSpace.name} on ${formattedDate}
     number of rooms: ${reservationDetail.numberOfRoom} 
     address: ${coworkingSpace.address} 
     open time - close time: ${coworkingSpace.openTime} - ${coworkingSpace.closeTime} 
@@ -35,9 +42,51 @@ async function sendReminderEmail(userEmail, reservationDetail) {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error("Error sending reminder email:", error);
+      console.error('Error sending reminder email:', error);
     } else {
-      console.log("Reminder email sent:", info.response);
+      console.log('Reminder email sent:', info.response);
+    }
+  });
+}
+
+async function sendConfirmationEmail(userEmail, reservationDetail) {
+  const coworkingSpace = await CoworkingSpace.findById(
+    reservationDetail.coworkingSpace
+  );
+  const user = await User.findById(reservationDetail.user);
+  const reservationDate = reservationDetail.reserveDate;
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'forcoworkingreservation@gmail.com',
+      pass: 'aqzv yuws xzpz voaz',
+    },
+  });
+
+  const formattedDate = moment(reservationDate).format(
+    'MMMM DD, YYYY, hh:mm:ss A'
+  );
+
+  const mailOptions = {
+    from: 'forcoworkingreservation@gmail.com',
+    to: userEmail,
+    subject: "Coworkingspace's Reservation Confirmation",
+    text: `Dear ${user.name}
+    This is a comfirmation for your coworking reservation scheduled at ${coworkingSpace.name} on ${formattedDate}
+    number of rooms: ${reservationDetail.numberOfRoom} 
+    address: ${coworkingSpace.address} 
+    open time - close time: ${coworkingSpace.openTime} - ${coworkingSpace.closeTime} 
+    for contact: ${coworkingSpace.telephone}
+    Best regards,
+    My sugar`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending reminder email:', error);
+    } else {
+      console.log('Reminder email sent:', info.response);
     }
   });
 }
@@ -59,4 +108,8 @@ exports.scheduleReminder = (userEmail, reservationDetail) => {
       }
     });
   }
+};
+
+exports.sendConfirmation = (userEmail, reservationDetail) => {
+  sendConfirmationEmail(userEmail, reservationDetail);
 };

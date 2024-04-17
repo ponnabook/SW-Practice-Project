@@ -1,8 +1,8 @@
 /** @format */
 
-const Reservation = require("../models/Reservation");
-const CoworkingSpace = require("../models/CoworkingSpace");
-const ReminderEmail = require("./reminderEmail");
+const Reservation = require('../models/Reservation');
+const CoworkingSpace = require('../models/CoworkingSpace');
+const ReminderEmail = require('./reminderEmail');
 
 //@desc Get all Reservations
 //@route GET /api/v1/reservations
@@ -11,9 +11,9 @@ exports.getReservations = async (req, res, next) => {
   let query;
 
   //   General users can see only thier reservations
-  if (req.user.role !== "admin") {
+  if (req.user.role !== 'admin') {
     query = Reservation.find({ user: req.user.id }).populate({
-      path: "coworkingSpace",
+      path: 'coworkingSpace',
     });
   } else {
     //If you are an admin, you can see all
@@ -21,11 +21,11 @@ exports.getReservations = async (req, res, next) => {
       query = Reservation.find({
         coworkingSpace: req.params.coworkingSpaceId,
       }).populate({
-        path: "coworkingSpace",
+        path: 'coworkingSpace',
       });
     } else {
       query = Reservation.find().populate({
-        path: "coworkingSpace",
+        path: 'coworkingSpace',
       });
     }
   }
@@ -42,7 +42,7 @@ exports.getReservations = async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .json({ success: false, message: "Cannot find Reservation" });
+      .json({ success: false, message: 'Cannot find Reservation' });
   }
 };
 
@@ -51,11 +51,9 @@ exports.getReservations = async (req, res, next) => {
 //@access Public
 exports.getReservation = async (req, res, next) => {
   try {
-    
     const reservation = await Reservation.findById(req.params.id).populate({
-      path: "coworkingSpace",
+      path: 'coworkingSpace',
     });
-    
 
     if (!reservation) {
       return res.status(404).json({
@@ -72,7 +70,7 @@ exports.getReservation = async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .json({ success: false, message: "Cannot find reservation" });
+      .json({ success: false, message: 'Cannot find reservation' });
   }
 };
 
@@ -101,7 +99,7 @@ exports.createReservation = async (req, res, next) => {
 
     // If the user is not an admin, they can only create 3 reservation
     // if (existedReservation.length >= 3 && req.user.role !== "admin") {
-      if (req.body.numberOfRoom > 3 && req.user.role !== "admin") {
+    if (req.body.numberOfRoom > 3 && req.user.role !== 'admin') {
       return res.status(400).json({
         success: false,
         message: `The user can only reserved up to 3 rooms`,
@@ -109,21 +107,22 @@ exports.createReservation = async (req, res, next) => {
     }
 
     const reservation = await Reservation.create(req.body);
+    ReminderEmail.sendConfirmation(req.user.email, req.body);
     ReminderEmail.scheduleReminder(req.user.email, req.body);
 
     res.status(201).json({
       success: true,
       msg:
-        "send email reminder to " +
+        'send email reminder to ' +
         req.user.email +
-        " before 1 day of this reservation",
+        ' before 1 day of this reservation',
       data: reservation,
     });
   } catch (error) {
     console.log(error);
     return res
       .status(500)
-      .json({ success: false, message: "Cannot create Reservation" });
+      .json({ success: false, message: 'Cannot create Reservation' });
   }
 };
 
@@ -143,7 +142,7 @@ exports.updateReservation = async (req, res, next) => {
     //Make sure user is the appointment owner
     if (
       reservation.user.toString() !== req.user.id &&
-      req.user.role !== "admin"
+      req.user.role !== 'admin'
     ) {
       return res.status(401).json({
         success: false,
@@ -164,7 +163,7 @@ exports.updateReservation = async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .json({ success: false, message: "Cannot update Reseravtion" });
+      .json({ success: false, message: 'Cannot update Reseravtion' });
   }
 };
 
@@ -185,7 +184,7 @@ exports.deleteReservation = async (req, res, next) => {
     //Make sure user is the reservation owner
     if (
       reservation.user.toString() !== req.user.id &&
-      req.user.role !== "admin"
+      req.user.role !== 'admin'
     ) {
       return res.status(401).json({
         success: false,
@@ -203,6 +202,6 @@ exports.deleteReservation = async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .json({ success: false, message: "Cannot delete Reservation" });
+      .json({ success: false, message: 'Cannot delete Reservation' });
   }
 };
