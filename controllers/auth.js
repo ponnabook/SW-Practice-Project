@@ -16,10 +16,7 @@ exports.register = async (req, res, next) => {
       password,
       role,
     });
-    //Create token
 
-    // const token = user.getSignedJwtToken();
-    // res.status(200).json({ success: true, token });
     sendTokenResponse(user, 200, res);
   } catch (err) {
     res.status(400).json({ success: false });
@@ -40,20 +37,17 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res
-        .status(400)
-        .json({ success: false, msg: ' Invalid credentials' });
+        .status(401)
+        .json({ success: false, msg: 'Invalid credentials' });
     }
     //Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res
         .status(401)
-        .json({ success: false, msg: ' Invalid credentials' });
+        .json({ success: false, msg: 'Invalid credentials' });
     }
-    //Create token
 
-    //   const token = user.getSignedJwtToken();
-    //   res.status(200).json({ success: true, token });
     sendTokenResponse(user, 200, res);
   } catch {
     return res.status(401).json({

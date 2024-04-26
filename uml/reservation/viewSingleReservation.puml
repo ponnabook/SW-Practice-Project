@@ -1,0 +1,47 @@
+@startuml View single Reservation (GET)
+
+header Reservation Sequence Diagram
+footer Page %page% of %lastpage%
+title "View single Reservation (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:reservation" as routerReservation
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:reservations" as controllersReservation
+participant "<<model>>\n:Reservation" as modelReservation
+participant "<<model>>\n:User" as modelUser
+database "<<MongoDB>>\n:reservations" as ReservationsDatabase
+database "<<MongoDB>>\n:users" as UsersDatabase
+
+client->server ++:req.get('/reservations/:id')
+server->routerReservation ++:app.use('/reservations',reservations)
+routerReservation -> middlewareAuth ++:protect()
+alt token
+    middlewareAuth->modelUser ++:findById(Token)
+    modelUser->UsersDatabase ++:UserSchema
+    modelUser<--UsersDatabase --:user
+    middlewareAuth<--modelUser --:user
+    middlewareAuth -> routerReservation --:next()
+else !token || token == "null"
+    middlewareAuth -> client --:res.status(401).json({error: 'Not authorized to access this route'})
+end
+routerReservation -> middlewareAuth ++:authorize('user, 'admin')
+alt req.user.role === 'user' || req.user.role === 'admin'
+    middlewareAuth -> routerReservation --:next()
+else
+    middlewareAuth -> client --:res.status(403).json({error: 'User role {req.user.role} not authorized to access this route'})
+end
+routerReservation -> controllersReservation ++:getReservation()
+controllersReservation->modelReservation ++:findById(req.params.id)
+modelReservation ->ReservationsDatabase ++: reservationSchema
+ReservationsDatabase --> modelReservation --: reservations
+controllersReservation <-- modelReservation --: reservations
+
+alt !reservation
+    controllersReservation->client --: res.status(404).json({success: false, message: 'No reservation with the id of ' + req.params.id})
+else
+    controllersReservation->client --: response
+end
+
+@enduml

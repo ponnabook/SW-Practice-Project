@@ -1,0 +1,56 @@
+@startuml Edit single reservation (PUT)
+
+header Reservation Sequence Diagram
+footer Page %page% of %lastpage%
+title "Edit single reservation (PUT)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:reservation" as routerReservation
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:reservations" as controllersReservation
+participant "<<model>>\n:Reservation" as modelReservation
+participant "<<model>>\n:User" as modelUser
+database "<<MongoDB>>\n:reservations" as reservationsDatabase
+database "<<MongoDB>>\n:users" as UsersDatabase
+
+client->server ++:req.put('/reservations/:id')
+server->routerReservation ++:app.use('/reservations',reservations)
+routerReservation -> middlewareAuth ++:protect()
+alt token
+    middlewareAuth->modelUser ++:findById(Token)
+    modelUser->UsersDatabase ++:UserSchema
+    modelUser<--UsersDatabase --:user
+    middlewareAuth<--modelUser --:user
+    middlewareAuth -> routerReservation --:next()
+else !token || token == "null"
+    middlewareAuth -> client --:res.status(401).json({error: 'Not authorized to access this route'})
+end
+routerReservation -> middlewareAuth ++:authorize('user, 'admin')
+alt req.user.role === 'user' || req.user.role === 'admin'
+    middlewareAuth -> routerReservation --:next()
+else
+    middlewareAuth -> client --:res.status(403).json({error: 'User role {req.user.role} not authorized to access this route'})
+end
+
+routerReservation -> controllersReservation ++:updateReservation()
+controllersReservation->modelReservation ++:findById(req.params.id, req.body)
+modelReservation ->reservationsDatabase ++: reservationSchema
+reservationsDatabase --> modelReservation --: reservation
+controllersReservation <-- modelReservation --: reservation
+
+alt !reservation
+    controllersReservation->client --: res.status(404).json({success: false, message: 'No reservation with the id of ' + req.params.id})
+else
+    alt reservation.user.toString() !== req.user.id && req.user.role !== 'admin'
+        controllersReservation->client --: res.status(401).json({success: false, message: 'User ${req.user.id} is not authorized to update this reservation})
+    else
+        controllersReservation->modelReservation ++:findByIdAndUpdate(req.params.id, req.body)
+        modelReservation ->reservationsDatabase ++: reservationSchema
+        reservationsDatabase --> modelReservation --: reservation
+        controllersReservation <-- modelReservation --: reservation
+        client <-- controllersReservation --: response
+    end
+end
+
+@enduml
