@@ -15,11 +15,11 @@ const { protect, authorize } = require('../middleware/auth');
 
 router
   .route('/')
-  .get(protect, getReservations)
-  .post(protect, authorize('user'), createReservation);
+  .get(protect, authorize('admin', 'user'), getReservations)
+  .post(protect, authorize('admin', 'user'), createReservation);
 router
   .route('/:id')
-  .get(protect, getReservation)
+  .get(protect, authorize('admin', 'user'), getReservation)
   .put(protect, authorize('admin', 'user'), updateReservation)
   .delete(protect, authorize('admin', 'user'), deleteReservation);
 module.exports = router;

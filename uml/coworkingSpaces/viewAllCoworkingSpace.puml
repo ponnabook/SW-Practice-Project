@@ -1,8 +1,8 @@
-@startuml View single coworking space (GET)
+@startuml View all coworking space (GET)
 
-header Co-working Space Reservation Sequence Diagram
+header Co-working Space Sequence Diagram
 footer Page %page% of %lastpage%
-title "View single coworking space (GET)"
+title "View all coworking space (GET)"
 
 participant "User" as client
 participant "<<javaScript>>\n:server" as server
@@ -11,13 +11,13 @@ participant "<<controllers>>\n:coworkingSpaces" as controllersCoworkingSpaces
 participant "<<model>>\n:CoworkingSpace" as modelCoworkingSpace
 database "<<MongoDB>>\n:coworkingSpaces" as coworkingSpacesDatabase
 
-client->server ++:req.get('/coworkingSpaces/:id')
+client->server ++:req.get('/coworkingSpaces')
 server->routerCoworkingSpaces ++:app.use('/coworkingSpaces',coworkingSpaces)
 routerCoworkingSpaces -> controllersCoworkingSpaces ++:getCoworkingSpaces()
-controllersCoworkingSpaces->modelCoworkingSpace ++:findById(req.params.id)
+controllersCoworkingSpaces->modelCoworkingSpace ++:find()
 modelCoworkingSpace ->coworkingSpacesDatabase ++: coworkingSpaceSchema
-coworkingSpacesDatabase --> modelCoworkingSpace --: coworkingSpace
-controllersCoworkingSpaces <-- modelCoworkingSpace --:coworkingSpace
+coworkingSpacesDatabase --> modelCoworkingSpace --: coworkingSpaces
+controllersCoworkingSpaces <-- modelCoworkingSpace --:coworkingSpaces
 controllersCoworkingSpaces->client --:response
 
 @enduml

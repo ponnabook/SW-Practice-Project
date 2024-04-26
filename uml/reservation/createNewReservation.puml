@@ -1,0 +1,64 @@
+@startuml Create New Reservation (POST)
+
+header Reservation Sequence Diagram
+footer Page %page% of %lastpage%
+title "Create New Reservation (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coworkingSpace" as routerCoworkingSpace
+participant "<<router>>\n:reservation" as routerReservation
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:reservations" as controllersReservation
+participant "<<controllers>>\n:email" as controllersEmail
+participant "<<model>>\n:Reservation" as modelReservation
+participant "<<model>>\n:CoworkingSpace" as modelCoworkingSpace
+participant "<<model>>\n:User" as modelUser
+database "<<MongoDB>>\n:reservations" as ReservationsDatabase
+database "<<MongoDB>>\n:users" as UsersDatabase
+database "<<MongoDB>>\n:coworkingSpace" as CoworkingSpacesDatabase
+
+client->server ++:req.post('/coworkingSpaces/:coworkingId/reservations')
+server->routerCoworkingSpace ++:app.use('/coworkingSpaces',coworkingSpaces)
+routerCoworkingSpace->routerReservation ++:router.use('/:coworkingSpaceId/reservations/',reservations)
+routerReservation -> middlewareAuth ++:protect()
+alt token
+    middlewareAuth->modelUser ++:findById(Token)
+    modelUser->UsersDatabase ++:UserSchema
+    modelUser<--UsersDatabase --:user
+    middlewareAuth<--modelUser --:user
+    middlewareAuth -> routerReservation --:next()
+else !token || token == "null"
+    middlewareAuth -> client --:res.status(401).json({error: 'Not authorized to access this route'})
+end
+routerReservation -> middlewareAuth ++:authorize('user, 'admin')
+alt req.user.role === 'user' || req.user.role === 'admin'
+    middlewareAuth -> routerReservation --:next()
+else
+    middlewareAuth -> client --:res.status(403).json({error: 'User role {req.user.role} not authorized to access this route'})
+end
+routerReservation -> controllersReservation ++:createReservation()
+controllersReservation->modelCoworkingSpace ++:findById(req.params.coworkingId)
+modelCoworkingSpace->CoworkingSpacesDatabase ++:coworkingSpaceSchema
+modelCoworkingSpace<--CoworkingSpacesDatabase --:coworkingSpace
+controllersReservation<--modelCoworkingSpace --:coworkingSpace
+
+alt !coworkingSpace
+    controllersReservation->client --:res.status(404).json({success: false, message: 'No coworkingspace with the id of ' + req.params.coworkingSpaceId})
+else
+
+    alt req.body.numberOfRoom > 3 && req.user.role !== 'admin'
+        controllersReservation->client --:res.status(400).json({success: false, message: 'The user can only reserve up to 3 rooms'})
+    else
+        controllersReservation->modelReservation ++:create(req.body)
+        modelReservation ->ReservationsDatabase ++: reservationSchema
+        ReservationsDatabase --> modelReservation --: reservation
+        controllersReservation <-- modelReservation --: reservation
+
+        controllersReservation->controllersEmail ++:sendConfirmation(req.user.email, req.body)
+        controllersReservation->controllersEmail ++:scheduleReminder(req.user.email, req.body)
+
+        controllersReservation->client --: response
+    end
+end
+@enduml

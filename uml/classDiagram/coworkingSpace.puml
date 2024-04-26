@@ -1,0 +1,68 @@
+@startuml CoworkigSpaceAPI
+left to right direction
+package "CoworkingSpace"{
+    class "<<Application>>\nCoworkingSpaceService" as CoworkingSpaceService{
+    }
+
+    class "<<Resource>>\nCoworkingSpaces" as ResourceCoworkingSpaces{
+        <<GET>> +getCoworkingSpaces():CoworkingSpace[]
+    }
+
+    class "<<Resource>>\nCoworkingSpace" as ResourceCoworkingSpace {
+        <<GET>> +getCoworkingSpace(): CoworkingSpace
+    }
+
+    class "<<Resource>>\nReservations" as ResourceReservations{
+        <<GET>> +getReservations():Reservation[]
+        <<POST>> +createReservation():Reservation
+    }
+
+    class "<<Resource>>\nReservation" as ResourceReservation {
+        <<GET>> +getReservation(): Reservation
+        <<PUT>> +updateReservation(): Reservation
+        <<DELETE>> +deleteReservation(): void
+    }
+
+    class "<<Resource>>\nAuth" as ResourceAuth {
+        <<POST>> +login(): token
+        <<POST>> +register(): token
+        <<GET>> +me(): User
+        <<GET>> +logout(): void
+    }
+
+    class "<<Representation>>\nCoworkingSpace" as RepresentationCoworkingSpace {
+        -name
+        -address
+        -telephone
+        -openTime
+        -closeTime
+    }
+    class "<<Representation>>\nUser" as RepresentationUser {
+        -name
+        -telephone
+        -email
+        -role
+        -password
+        -createdAt
+    }
+    class "<<Representation>>\nReservation" as RepresentationReservation {
+        -user
+        -reserveDate
+        -coworkingSpace
+        -numberOfRoom
+        -createdAt
+    }
+
+}
+
+CoworkingSpaceService ..> ResourceCoworkingSpaces:"/coworkingSpaces\n<<Path>>"
+ResourceCoworkingSpaces ..> ResourceCoworkingSpace: "/{coworkingSpaceId}\n<<Path>>"
+ResourceCoworkingSpace ..> RepresentationCoworkingSpace: "<<use>>"
+ResourceCoworkingSpace ..> ResourceReservations: "/reservations\n<<Path>>"
+CoworkingSpaceService ..> ResourceAuth: "/auth\n<<Path>>"
+ResourceAuth ..> RepresentationUser: "<<use>>"
+CoworkingSpaceService ..> ResourceReservations: "/reservations\n<<Path>>"
+ResourceReservations ..> ResourceReservation: "/{reservationId}\n<<Path>>"
+ResourceReservation ..> RepresentationReservation: "<<use>>"
+
+@enduml

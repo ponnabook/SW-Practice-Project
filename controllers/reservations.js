@@ -94,11 +94,7 @@ exports.createReservation = async (req, res, next) => {
     //add user Id to req.body
     req.body.user = req.user.id;
 
-    // Check for existed reservation
-    // const existedReservation = await Reservation.find({ user: req.user.id });
-
     // If the user is not an admin, they can only create 3 reservation
-    // if (existedReservation.length >= 3 && req.user.role !== "admin") {
     if (req.body.numberOfRoom > 3 && req.user.role !== 'admin') {
       return res.status(400).json({
         success: false,
@@ -107,6 +103,7 @@ exports.createReservation = async (req, res, next) => {
     }
 
     const reservation = await Reservation.create(req.body);
+
     Email.sendConfirmation(req.user.email, req.body);
     Email.scheduleReminder(req.user.email, req.body);
 

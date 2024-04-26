@@ -1,5 +1,5 @@
 /** @format */
-const CoworkingSpace = require("../models/CoworkingSpace");
+const CoworkingSpace = require('../models/CoworkingSpace');
 //@desc Get all CoworkingSpaces
 //@route GET /api/v1/coworkingSpaces
 //@access Public
@@ -8,7 +8,7 @@ exports.getCoworkingSpaces = async (req, res, next) => {
     let query;
     const reqQuery = { ...req.query };
 
-    const removeFields = ["select", "sort", "page", "limit"];
+    const removeFields = ['select', 'sort', 'page', 'limit'];
     removeFields.forEach((param) => delete reqQuery[param]);
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(
@@ -18,16 +18,16 @@ exports.getCoworkingSpaces = async (req, res, next) => {
     query = CoworkingSpace.find(JSON.parse(queryStr));
     //Select Fields
     if (req.query.select) {
-      const fields = req.query.select.split(",").join(" ");
+      const fields = req.query.select.split(',').join(' ');
       query = query.select(fields);
     }
 
     //Sort
     if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
+      const sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy);
     } else {
-      query = query.sort("name");
+      query = query.sort('name');
     }
     //Pagination
     const page = parseInt(req.query.page, 10) || 1;
@@ -57,14 +57,12 @@ exports.getCoworkingSpaces = async (req, res, next) => {
       };
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        count: coworkingSpaces.length,
-        pagination,
-        data: coworkingSpaces,
-      });
+    res.status(200).json({
+      success: true,
+      count: coworkingSpaces.length,
+      pagination,
+      data: coworkingSpaces,
+    });
   } catch (err) {
     res.status(400).json({ success: false });
   }
@@ -86,52 +84,3 @@ exports.getCoworkingSpace = async (req, res, next) => {
     return res.status(400).json({ success: false });
   }
 };
-
-/*
-
-//@desc Create new CoworkingSpace
-//@route POST /api/v1/coworkingSpaces
-//@access Private
-exports.createCoworkingSpace = async(req, res, next) => {
-  const coworkingSpace = await CoworkingSpace.create(req.body);
-  res.status(201).json({success:true, data:coworkingSpace});
-};
-
-//@desc Update CoworkingSpace
-//@route PUT /api/v1/coworkingSpaces/:id
-//@access Private
-exports.updateCoworkingSpace = async(req, res, next) => {
-  try{
-    const coworkingSpace = await CoworkingSpace.findByIdAndUpdate(req.params.id, req.body, {
-        new:true,
-        runValidators:true
-    });
-
-    if(!coworkingSpace){
-        return res.status(400).json({success:false});
-    }
-
-    res.status(200).json({success:true, data:coworkingSpace});
-} catch(err){
-    return res.status(400).json({success:false});
-}
-};
-
-//@desc Delete CoworkingSpace
-//@route DELETE /api/v1/CoworkingSpaces/:id
-//@access Public
-exports.deleteCoworkingSpace = async(req, res, next) => {
-  try{
-    const coworkingSpace = await coworkingSpace.findById(req.params.id);
-    
-    if(!coworkingSpace){
-        return res.status(400).json({success:false, message:`Bootcamp not found with id of ${req.params.id}`});
-    }
-
-    await coworkingSpace.deleteOne();
-
-    res.status(200).json({success:true, data:{}});
-} catch(err){
-    return res.status(400).json({success:false});
-}
-}; */
