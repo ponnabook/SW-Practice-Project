@@ -31,8 +31,8 @@ alt token
 else !token || token == "null"
     middlewareAuth -> client --:res.status(401).json({error: 'Not authorized to access this route'})
 end
-routerReservation -> middlewareAuth ++:authorize('user, 'admin')
-alt req.user.role === 'user' || req.user.role === 'admin'
+routerReservation -> middlewareAuth ++:authorize('user')
+alt req.user.role === 'user'
     middlewareAuth -> routerReservation --:next()
 else
     middlewareAuth -> client --:res.status(403).json({error: 'User role {req.user.role} not authorized to access this route'})
@@ -54,10 +54,6 @@ else
         modelReservation ->ReservationsDatabase ++: reservationSchema
         ReservationsDatabase --> modelReservation --: reservation
         controllersReservation <-- modelReservation --: reservation
-
-        controllersReservation->controllersEmail ++:sendConfirmation(req.user.email, req.body)
-        controllersReservation->controllersEmail ++:scheduleReminder(req.user.email, req.body)
-
         controllersReservation->client --: response
     end
 end
